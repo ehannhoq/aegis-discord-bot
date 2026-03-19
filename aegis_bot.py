@@ -28,8 +28,6 @@ CHANNEL_THRESHOLD = 2
 TIME_WINDOW = 5
 TIMEOUT_DURATION = 7
 
-GUILD_ID = discord.Object(id=967959755861671967)
-
 
 def format_duration(days):
     hours = days * 24
@@ -128,6 +126,7 @@ async def setDetectionTime(interaction: discord.Interaction, duration: float):
 @bot.tree.command(name='sync', description='Sync commands')
 @app_commands.checks.has_permissions(administrator=True)
 async def sync(interaction: discord.Interaction):
+    bot.tree.clear_commands(guild=None)
     await bot.tree.sync()
     await interaction.response.send_message('Commands synced')
 
