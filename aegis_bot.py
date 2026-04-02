@@ -13,6 +13,7 @@ from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 from PIL import Image
+from skimage.metrics import structural_similarity as ssim
 
 
 class ActionType(Enum):
@@ -58,11 +59,11 @@ async def initialize_db():
 
 async def save_settings(guildID, loggingID, actionType, timeoutDuration, detectionWindow, channelThreshold):
     await bot.db.execute("""
-        INSERT INTO settings (guild_id, log_channel, action_type timeout_dur, det_win, chan_thres)
+        INSERT INTO settings (guild_id, log_channel, action_type, timeout_dur, det_win, chan_thres)
         VALUES ($1, $2, $3, $4, $5)
         ON CONFLICT (guild_id) DO UPDATE SET
             log_channel = EXCLUDED.log_channel,
-            action_type = EXCLUDED.action_type
+            action_type = EXCLUDED.action_type,
             timeout_dur = EXCLUDED.timeout_dur,
             det_win = EXCLUDED.det_win,
             chan_thres = EXCLUDED.chan_thres
@@ -216,17 +217,17 @@ async def setChannelThreshold(interaction: discord.Interaction, n: int):
 
 @bot.tree.command(name='setactiontype', description='Set the action to be taken for flagged accounts')
 @app_commands.checks.has_permissions(administrator=True)
-async def setActionType(interaction: discord.Interaction, type: ActionType):
-    runtime_settings[interaction.guild.id]['ACTION_TYPE'] = n
+async def setActionType(interaction: discord.Interaction, action_type: ActionType):
+    runtime_settings[interaction.guild.id]['ACTION_TYPE'] = action_type
 
     await bot.db.execute("""
         INSERT INTO settings (guild_id, action_type)
         VALUES ($2, $1)
         ON CONFLICT (guild_id)
         DO UPDATE SET action_type = $1
-    """, type.value, interaction.guild.id)
+    """, action_type.value, interaction.guild.id)
 
-    await interaction.response.send_message(f'Set action type to {type.name}')
+    await interaction.response.send_message(f'Set action type to {action_type.name}')
 
 
 @bot.tree.command(name='sync', description='Sync commands')
@@ -246,6 +247,9 @@ async def on_command_error(ctx, error):
 @bot.event
 async def on_ready():
     await initialize_db()
+
+    bot.tree.copy_global_to(guild=discord.Object(id=967959755861671967))
+    await bot.tree.sync(guild=discord.Object(id=967959755861671967))
 
     for guild in bot.guilds:
         settings = await retrieve_settings(guild.id)
