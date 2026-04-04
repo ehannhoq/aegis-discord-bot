@@ -42,17 +42,17 @@ TEST_SERVER_ID = 967959755861671967
 
 
 async def check_similar_messages(messages: list[discord.Message]) -> bool:
-    anchor = messages[0]
-    for i in range(1, len(messages)):
-        if anchor.content != '' and messages[i].content != '':
-            ratio = SequenceMatcher(None, anchor.content, messages[i].content).ratio()
-            if ratio >= MESSAGE_SIMILARITY_THRESHOLD:   
-                return True
+    for i in range(len(messages) - 1):
+        for j in range(i + 1, len(messages)):
+            if messages[i].content != '' and messages[j].content != '':
+                ratio = SequenceMatcher(None, messages[i].content, messages[j].content).ratio()
+                if ratio >= MESSAGE_SIMILARITY_THRESHOLD:   
+                    return True
 
-        if anchor.attachments and messages[i].attachments:
-            score = await attachment_set_similarity(anchor.attachments, messages[i].attachments)
-            if score >= IMAGE_SIMILARITY_THRESHOLD:
-                return True
+            if messages[i].attachments and messages[j].attachments:
+                score = await attachment_set_similarity(messages[i].attachments, messages[j].attachments)
+                if score >= IMAGE_SIMILARITY_THRESHOLD:
+                    return True
     
     return False
 
@@ -60,11 +60,11 @@ async def attachment_set_similarity(attachments_a: list[discord.Attachment], att
     matrix = np.zeros((len(attachments_a), len(attachments_b)))
 
     for i, a in enumerate(attachments_a):
-        a_bytes = await a.read()
+        a_bytes = await a.read()    
         a_image = np.array(Image.open(io.BytesIO(a_bytes)).convert('RGB'))
         for j, b in enumerate(attachments_b):
             b_bytes = await b.read()
-            b_image = np.array(Image.open(io.BytesIO(b_bytes)).convert('RGB'))
+            b_image = np.array(Image.open(io.BytesIO(b_bytes)).convert('RGB').resize((a_image.shape[1], a_image.shape[0])))
             matrix[i][j] = ssim(a_image, b_image, data_range=255, channel_axis=-1)
 
     row, col = linear_sum_assignment(-matrix)
