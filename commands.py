@@ -100,7 +100,7 @@ class Commands(commands.Cog):
     @app_commands.command(name='sync', description='Sync commands (can only be done in private development server)')
     @app_commands.checks.has_permissions(administrator=True)
     async def sync(self, interaction: discord.Interaction):
-        if interaction.channel_id == TEST_SERVER_ID:
+        if interaction.guild.id == TEST_SERVER_ID:
             self.bot.tree.clear_commands(guild=None)
             await self.bot.tree.sync()
             await interaction.response.send_message('Commands synced')
