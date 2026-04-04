@@ -97,12 +97,12 @@ class Commands(commands.Cog):
         await interaction.response.send_message(f'Set role ping to {role.name}')
 
 
-    @bot.command()
-    async def sync(ctx):
-        if ctx.author.id == OWNER_USERID:
+    @commands.command()
+    async def sync(self, ctx):
+        if ctx.author.id == OWNER_ID:
             try:
-                await bot.tree.sync()
-                await ctx.send('Command tree synced.')
+                synced = await self.bot.tree.sync()
+                await ctx.send(f'Synced {len(synced)} commands.')
             except Exception as e:
                 await ctx.send(f'Sync failed: {e}')
         else:
