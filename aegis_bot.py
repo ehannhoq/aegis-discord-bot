@@ -149,12 +149,12 @@ async def on_message(message: discord.Message):
             similar_messages = await check_similar_messages(cached_messages[key])
             if similar_messages:
                 await handle_compromised_account(*key, len(channels_used))
-            else:
+            elif bot.runtime_settings[message.guild.id]['LOGGING_CHANNEL']:
                 title = 'Compromised Account Suspected'
                 user = f"**User:** {message.author.global_name}"
                 reason = f'**Reason:** Sent {len(cached_messages[key])} messages in {len(channels_used)} within {bot.runtime_settings[message.guild.id]['DETECTION_WINDOW']} seconds'
 
-                await send_embeded(bot=bot, guildID=message.guild.id, title=title, description=user + '\n' + reason + '\n' + '**Action Taken:** None', color=0xff8800, timestamp=datetime.datetime.now())
+                await send_embeded(bot=bot, guildID=message.guild.id, channel_id=bot.runtime_settings[message.guild.id]['LOGGING_CHANNEL'], title=title, description=user + '\n' + reason + '\n' + '**Action Taken:** None', color=0xff8800, timestamp=datetime.datetime.now())
         finally:
             processing_users.discard(key)
 
