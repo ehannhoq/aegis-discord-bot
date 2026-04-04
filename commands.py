@@ -4,7 +4,7 @@ from discord import app_commands
 
 from utils import format_duration
 from enums import ActionType
-from aegis_bot import TEST_SERVER_ID
+from aegis_bot import OWNER_ID
 
 
 class Commands(commands.Cog):
@@ -97,13 +97,17 @@ class Commands(commands.Cog):
         await interaction.response.send_message(f'Set role ping to {role.name}')
 
 
-    @app_commands.command(name='sync', description='Sync commands (can only be done in private development server)')
-    @app_commands.checks.has_permissions(administrator=True)
-    async def sync(self, interaction: discord.Interaction):
-        if interaction.guild.id == TEST_SERVER_ID:
-            self.bot.tree.clear_commands(guild=None)
-            await self.bot.tree.sync()
-            await interaction.response.send_message('Commands synced')
+    @bot.command()
+    async def sync(ctx):
+        if ctx.author.id == OWNER_USERID:
+            try:
+                await bot.tree.sync()
+                await ctx.send('Command tree synced.')
+            except Exception as e:
+                await ctx.send(f'Sync failed: {e}')
+        else:
+            await ctx.send('You must be the owner to use this command!')
+
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):

@@ -38,7 +38,7 @@ processing_users = set()
 
 MESSAGE_SIMILARITY_THRESHOLD = 0.80
 IMAGE_SIMILARITY_THRESHOLD = 0.90
-TEST_SERVER_ID = 967959755861671967
+OWNER_ID = 259720498823430145
 
 
 async def check_similar_messages(messages: list[discord.Message]) -> bool:
@@ -99,7 +99,7 @@ async def handle_compromised_account(guildID, userID, channels_used):
 
     if bot.runtime_settings[guildID]['LOGGING_CHANNEL']:
         title = 'Compromised Account Detected'
-        username = f'**User:** {user.global_name}'
+        username = f'**User:** {user.name}'
         reason = f'**Reason:** Sent {len(messages)} messages in {channels_used} channels within {bot.runtime_settings[guildID]['DETECTION_WINDOW']} seconds'
         action_taken = '**Action Taken:** None'
         if actionType == ActionType.TIMEOUT.value:
@@ -114,8 +114,6 @@ async def handle_compromised_account(guildID, userID, channels_used):
             await guild.get_channel(bot.runtime_settings[guildID]['LOGGING_CHANNEL']).send(f'{role.mention}')
 
         
-
-
 @tasks.loop(seconds=1)
 async def clear_cache():
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -151,7 +149,7 @@ async def on_message(message: discord.Message):
                 await handle_compromised_account(*key, len(channels_used))
             elif bot.runtime_settings[message.guild.id]['LOGGING_CHANNEL']:
                 title = 'Compromised Account Suspected'
-                user = f"**User:** {message.author.global_name}"
+                user = f"**User:** {message.author.name}"
                 reason = f'**Reason:** Sent {len(cached_messages[key])} messages in {len(channels_used)} within {bot.runtime_settings[message.guild.id]['DETECTION_WINDOW']} seconds'
 
                 await send_embeded(bot=bot, guildID=message.guild.id, channel_id=bot.runtime_settings[message.guild.id]['LOGGING_CHANNEL'], title=title, description=user + '\n' + reason + '\n' + '**Action Taken:** None', color=0xff8800, timestamp=datetime.datetime.now())
@@ -165,9 +163,6 @@ async def on_message(message: discord.Message):
 async def on_ready():
     await bot.load_extension('commands')
     await initialize_db(bot=bot)
-
-    bot.tree.copy_global_to(guild=discord.Object(id=TEST_SERVER_ID))
-    await bot.tree.sync(guild=discord.Object(id=TEST_SERVER_ID))
 
     for guild in bot.guilds:
         settings = await retrieve_settings(bot=bot, guildID=guild.id)
