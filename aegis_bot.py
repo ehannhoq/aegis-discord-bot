@@ -83,7 +83,8 @@ async def handle_compromised_account(guildID, userID, channels_used):
             await msg.delete()
         except (discord.NotFound, discord.Forbidden):
             pass
-    guild: discord.Guild = await bot.get_guild(guildID)
+
+    guild: discord.Guild = bot.get_guild(guildID)
     user: discord.Member = await guild.fetch_member(userID)
     
     actionType = bot.runtime_settings[guildID]['ACTION_TYPE']
