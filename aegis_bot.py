@@ -97,7 +97,7 @@ async def handle_compromised_account(guildID, userID, channels_used):
 
     title = 'Compromised Account Detected'
     username = f'**User:** {user.global_name}'
-    reason = f'Sent {len(messages)} messages in {channels_used} channels within {bot.runtime_settings[guildID]['DETECTION_WINDOW']} seconds'
+    reason = f'**Reason:** Sent {len(messages)} messages in {channels_used} channels within {bot.runtime_settings[guildID]['DETECTION_WINDOW']} seconds'
     action_taken = '**Action Taken:** None'
     if actionType == ActionType.TIMEOUT.value:
         action_taken = f'**Action Taken:** User timed out for {format_duration(bot.runtime_settings[guildID]['TIMEOUT_DURATION'])}'
@@ -142,8 +142,8 @@ async def on_message(message: discord.Message):
                 await handle_compromised_account(*key, len(channels_used))
             else:
                 title = 'Compromised Account Suspected'
-                user = message.author.global_name
-                reason = f'Sent {len(cached_messages[key])} messages in {len(channels_used)} within {bot.runtime_settings[message.guild.id]['DETECTION_WINDOW']} seconds'
+                user = f"**User:** {message.author.global_name}"
+                reason = f'**Reason:** Sent {len(cached_messages[key])} messages in {len(channels_used)} within {bot.runtime_settings[message.guild.id]['DETECTION_WINDOW']} seconds'
 
                 await send_embeded(bot=bot, guildID=message.guild.id, title=title, description=user + '\n' + reason + '\n' + '**Action Taken:** None', color=0xff8800, timestamp=datetime.datetime.now())
         finally:
