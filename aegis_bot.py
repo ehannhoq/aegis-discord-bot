@@ -38,6 +38,7 @@ processing_users = set()
 
 MESSAGE_SIMILARITY_THRESHOLD = 0.80
 IMAGE_SIMILARITY_THRESHOLD = 0.90
+TEST_SERVER_ID = 967959755861671967
 
 
 async def check_similar_messages(messages: list[discord.Message]) -> bool:
@@ -165,9 +166,8 @@ async def on_ready():
     await bot.load_extension('commands')
     await initialize_db(bot=bot)
 
-    # await bot.tree.sync()
-    bot.tree.copy_global_to(guild=discord.Object(id=1346357633279459411))
-    await bot.tree.sync(guild=discord.Object(id=1346357633279459411))
+    bot.tree.copy_global_to(guild=discord.Object(id=TEST_SERVER_ID))
+    await bot.tree.sync(guild=discord.Object(id=TEST_SERVER_ID))
 
     for guild in bot.guilds:
         settings = await retrieve_settings(bot=bot, guildID=guild.id)

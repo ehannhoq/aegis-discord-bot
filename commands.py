@@ -4,6 +4,7 @@ from discord import app_commands
 
 from utils import format_duration
 from enums import ActionType
+from aegis_bot import TEST_SERVER_ID
 
 
 class Commands(commands.Cog):
@@ -96,12 +97,13 @@ class Commands(commands.Cog):
         await interaction.response.send_message(f'Set role ping to {role.name}')
 
 
-    @app_commands.command(name='sync', description='Sync commands')
+    @app_commands.command(name='sync', description='Sync commands (can only be done in private development server)')
     @app_commands.checks.has_permissions(administrator=True)
     async def sync(self, interaction: discord.Interaction):
-        self.bot.tree.clear_commands(guild=None)
-        await self.bot.tree.sync()
-        await interaction.response.send_message('Commands synced')
+        if interaction.channel_id == TEST_SERVER_ID:
+            self.bot.tree.clear_commands(guild=None)
+            await self.bot.tree.sync()
+            await interaction.response.send_message('Commands synced')
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
