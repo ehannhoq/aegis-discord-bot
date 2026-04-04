@@ -179,5 +179,5 @@ async def on_ready():
 
     print("Aegis is ready!")
 
-
-bot.run(os.getenv("AEGIS_TOKEN"))
+if __name__ == "__main__":
+    bot.run(os.getenv("AEGIS_TOKEN"))
