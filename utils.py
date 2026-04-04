@@ -9,11 +9,11 @@ def format_duration(days):
     return f'{days:g} {"day" if days == 1 else "days"}'
 
 
-async def send_embeded(bot, guildID, title: str, description: str, color: int, timestamp:datetime.datetime):
+async def send_embeded(bot, guildID: int, channel_id: int, title: str, description: str, color: int, timestamp:datetime.datetime):
     embeded: discord.Embed = discord.Embed(
         title=title,
         description=description,
         color=color,
         timestamp=timestamp
     )
-    await bot.get_channel(bot.runtime_settings[guildID]['LOGGING_CHANNEL']).send(embed=embeded)
+    await bot.get_channel(channel_id).send(embed=embeded)
