@@ -80,6 +80,22 @@ class Commands(commands.Cog):
 
         await interaction.response.send_message(f'Set action type to {action_type.name}')
 
+    
+    @app_commands.command(name='setroleping', description='Set the role that will get pinged for compromised/suspected accounts')
+    @app_commands.checks.has_permissions(administrator=True)
+    async def setRolePing(self, interaction: discord.Interaction, role: discord.Role):
+        self.bot.runtime_settings[interaction.guild.id]['ROLE_PING'] = role.id
+
+        await self.bot.db.execute("""
+            INSERT INTO settings (guild_id, role_ping)
+            VALUES ($2, $1)
+            ON CONFLICT (guild_id)
+            DO UPDATE SET role_ping = $1
+        """, role.id, interaction.guild.id)
+
+        await interaction.response.send_message(f'Set role ping to {role.name}')
+
+
     @app_commands.command(name='sync', description='Sync commands')
     @app_commands.checks.has_permissions(administrator=True)
     async def sync(self, interaction: discord.Interaction):

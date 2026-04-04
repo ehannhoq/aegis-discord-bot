@@ -8,7 +8,8 @@ def default_settings():
         'ACTION_TYPE': ActionType.NONE.value,
         'TIMEOUT_DURATION': 7,
         'DETECTION_WINDOW': 1,
-        'CHANNEL_THRESHOLD': 3
+        'CHANNEL_THRESHOLD': 3,
+        'ROLE_PING': None
     }
 
 async def initialize_db(bot):
@@ -20,14 +21,15 @@ async def initialize_db(bot):
             action_type INTEGER DEFAULT 0,
             timeout_dur     FLOAT   DEFAULT 7,
             det_win         FLOAT   DEFAULT 1,
-            chan_thres      INTEGER DEFAULT 3
+            chan_thres      INTEGER DEFAULT 3,
+            role_ping       BIGINT
         )
     """)
 
 
 async def retrieve_settings(bot, guildID):
     row = await bot.db.fetchrow(
-        "SELECT log_channel, action_type, timeout_dur, det_win, chan_thres FROM settings WHERE guild_id = $1",
+        "SELECT log_channel, action_type, timeout_dur, det_win, chan_thres, role_ping FROM settings WHERE guild_id = $1",
         guildID
     )
     if row:
@@ -36,6 +38,7 @@ async def retrieve_settings(bot, guildID):
             "ACTION_TYPE": row["action_type"],
             "TIMEOUT_DURATION": row["timeout_dur"],
             "DETECTION_WINDOW": row["det_win"],
-            "CHANNEL_THRESHOLD": row["chan_thres"]
+            "CHANNEL_THRESHOLD": row["chan_thres"],
+            "ROLE_PING": row["role_ping"]
         }
     return None

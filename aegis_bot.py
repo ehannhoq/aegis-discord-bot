@@ -83,8 +83,8 @@ async def handle_compromised_account(guildID, userID, channels_used):
             await msg.delete()
         except (discord.NotFound, discord.Forbidden):
             pass
-
-    user: discord.Member = await bot.get_guild(guildID).fetch_member(userID)
+    guild: discord.Guild = await bot.get_guild(guildID)
+    user: discord.Member = await guild.fetch_member(userID)
     
     actionType = bot.runtime_settings[guildID]['ACTION_TYPE']
     try:
@@ -95,16 +95,23 @@ async def handle_compromised_account(guildID, userID, channels_used):
     except (discord.Forbidden, discord.HTTPException):
         pass
 
-    title = 'Compromised Account Detected'
-    username = f'**User:** {user.global_name}'
-    reason = f'**Reason:** Sent {len(messages)} messages in {channels_used} channels within {bot.runtime_settings[guildID]['DETECTION_WINDOW']} seconds'
-    action_taken = '**Action Taken:** None'
-    if actionType == ActionType.TIMEOUT.value:
-        action_taken = f'**Action Taken:** User timed out for {format_duration(bot.runtime_settings[guildID]['TIMEOUT_DURATION'])}'
-    elif actionType == ActionType.KICK.value:
-        action_taken = f'**Action Taken:** Kicked user.'
+    if bot.runtime_settings[guildID]['LOGGING_CHANNEL']:
+        title = 'Compromised Account Detected'
+        username = f'**User:** {user.global_name}'
+        reason = f'**Reason:** Sent {len(messages)} messages in {channels_used} channels within {bot.runtime_settings[guildID]['DETECTION_WINDOW']} seconds'
+        action_taken = '**Action Taken:** None'
+        if actionType == ActionType.TIMEOUT.value:
+            action_taken = f'**Action Taken:** User timed out for {format_duration(bot.runtime_settings[guildID]['TIMEOUT_DURATION'])}'
+        elif actionType == ActionType.KICK.value:
+            action_taken = f'**Action Taken:** Kicked user.'
 
-    await send_embeded(bot=bot, guildID=guildID, title=title, description=username + '\n' + reason + '\n' + action_taken, color=0xff0000, timestamp=datetime.datetime.now())
+        await send_embeded(bot=bot, guildID=guildID, channel_id=bot.runtime_settings[guildID]['LOGGING_CHANNEL'], title=title, description=username + '\n' + reason + '\n' + action_taken, color=0xff0000, timestamp=datetime.datetime.now())
+
+        if bot.runtime_settings[guildID]['ROLE_PING']:
+            role = guild.get_role(bot.runtime_settings[guildID]['ROLE_PING'])
+            await guild.get_channel(bot.runtime_settings[guildID]['LOGGING_CHANNEL']).send(f'{role.mention}')
+
+        
 
 
 @tasks.loop(seconds=1)
